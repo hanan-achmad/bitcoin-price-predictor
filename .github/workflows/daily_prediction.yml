@@ -1,0 +1,35 @@
+name: Daily Bitcoin Prediction
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # jalan tiap hari jam 08:00 WIB
+  workflow_dispatch:      # bisa dijalankan manual
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run prediction script
+      run: |
+        python automation/daily_update.py
+
+    - name: Commit prediction result
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add data/prediction_results/daily_predictions.csv
+        git commit -m "Daily prediction update" || echo "No changes"
+        git push
